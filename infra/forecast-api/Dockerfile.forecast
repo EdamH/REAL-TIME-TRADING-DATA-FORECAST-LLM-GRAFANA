@@ -1,0 +1,20 @@
+# Use official Python 3.9 image as base
+FROM python:3.9
+
+# Set working directory for the app
+WORKDIR /shared/httpd/forecast-api
+
+# Copy only requirements first to leverage Docker caching
+COPY ./forecast-api/app/requirements.txt /shared/httpd/forecast-api/app/requirements.txt
+
+# Install dependencies
+RUN pip install --no-cache-dir -r /shared/httpd/forecast-api/app/requirements.txt
+
+# Copy the rest of the application
+COPY ./forecast-api /shared/httpd/forecast-api
+
+# Expose necessary port
+EXPOSE 5000
+
+# Start a shell to debug the container interactively
+CMD ["python", "/shared/httpd/forecast-api/app/main.py"]
