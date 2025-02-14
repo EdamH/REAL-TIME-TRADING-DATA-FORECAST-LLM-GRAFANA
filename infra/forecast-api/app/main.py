@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 from flask import Flask, request, jsonify
-from utils.es_utils import fetch_data_es, process_data
+from utils.es_utils import fetch_data_es, process_data, get_by_id
 from utils.prophet_utils import train_prophet, predict_prophet
+from utils.llm_utils import classify_sentiment, generate_recommendation
 
 app = Flask(__name__)
 
@@ -75,6 +76,49 @@ def forecast_data():
         return jsonify(merged_results.to_dict(orient='records'))
     else:
         return jsonify({"error": "No predictions were made"})
+    
+
+
+@app.route('/generate', methods=['GET'])
+def analyze_trade():
+    """Endpoint FastAPI pour analyser un trade et donner une recommandation."""
+
+    # Récupération du symbole
+    es_id = request.args.get('es_id')
+
+    if ' ' in es_id:
+        es_id = es_id.replace(' ', 'T')
+
+    # Requête Elasticsearch pour récupérer les données du trade
+    response = get_by_id(es_id)
+    
+    if not response or "_source" not in response:
+        jsonify({"error": "Trade not found in ES"})
+
+    data = response["_source"]
+    
+    # Calcul de la variation du prix
+    variation = data["c"] - data["o"]
+    
+    # Détection du sentiment du marché
+    sentiment = classify_sentiment(variation)
+    
+    # Génération de la recommandation
+    recommendation = generate_recommendation(data["symbol"], sentiment, variation)
+
+    # Résultat final
+    result = {
+        "es_id": es_id,
+        "symbol": data["symbol"],
+        "timestamp": data["t"],
+        "open": data["o"],
+        "close": data["c"],
+        "variation": variation,
+        "sentiment": sentiment,
+        "recommendation": recommendation
+    }
+    
+    return result
 
 
 if __name__ == "__main__":

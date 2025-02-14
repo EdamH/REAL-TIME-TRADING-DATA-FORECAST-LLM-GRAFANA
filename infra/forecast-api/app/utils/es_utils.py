@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 def fetch_data_es(symbol = "BTC/USD"):
     # Connect to Elasticsearch
     es = Elasticsearch(["http://elasticsearch-cntr:9200"])
+    # es = Elasticsearch(["http://localhost:9200"])
 
 
     # Define the time range (last 30 days)
@@ -44,6 +45,12 @@ def fetch_data_es(symbol = "BTC/USD"):
     hits = [hit["_source"] for hit in response["hits"]["hits"]]
     data = pd.DataFrame(hits)
     return data
+
+def get_by_id(es_id):
+    es = Elasticsearch(["http://elasticsearch-cntr:9200"])
+    # es = Elasticsearch(["http://localhost:9200"])
+    return es.get(index="trading", id=es_id, ignore=404)
+
 
 def process_data(data):
     data['market'] = data['c'] * data['v']

@@ -1,13 +1,7 @@
-from elasticsearch import Elasticsearch
 import pandas as pd
 import random
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 
-# 🔹 Initialisation de FastAPI
-app = FastAPI()
-
-# 🔹 Connexion à Elasticsearch
-es = Elasticsearch("http://localhost:9200")  # Remplace par ton URL Elasticsearch
 
 # 🔹 Chargement du modèle GPT-2 pour générer des recommandations
 model_name = "gpt2"
@@ -60,41 +54,3 @@ def generate_recommendation(symbol, sentiment, variation):
         recommendation = random.choice(recommendations_dict[sentiment])
 
     return recommendation
-
-@app.get("/analyze/{es_id}")
-def analyze_trade(es_id: str):
-    """Endpoint FastAPI pour analyser un trade et donner une recommandation."""
-    
-    # 🔹 Requête Elasticsearch pour récupérer les données du trade
-    response = es.get(index="trading", id=es_id, ignore=404)
-    
-    if not response or "_source" not in response:
-        raise HTTPException(status_code=404, detail="Trade not found in Elasticsearch")
-
-    data = response["_source"]
-    
-    # 🔹 Calcul de la variation du prix
-    variation = data["c"] - data["o"]
-    
-    # 🔹 Détection du sentiment du marché
-    sentiment = classify_sentiment(variation)
-    
-    # 🔹 Génération de la recommandation
-    recommendation = generate_recommendation(data["symbol"], sentiment, variation)
-
-    # 🔹 Résultat final
-    result = {
-        "es_id": es_id,
-        "symbol": data["symbol"],
-        "timestamp": data["t"],
-        "open": data["o"],
-        "close": data["c"],
-        "variation": variation,
-        "sentiment": sentiment,
-        "recommendation": recommendation
-    }
-    
-    return result
-
-# 🔹 Pour exécuter l'API :
-# uvicorn main:app --host 0.0.0.0 --port 8000 --reload
