@@ -1,0 +1,20 @@
+# Utilisation de l'image officielle Python 3.9 comme base
+FROM python:3.9
+
+# Définition du répertoire de travail dans le conteneur
+WORKDIR /shared/httpd/trading-api
+
+# Copie des dépendances en premier pour optimiser la mise en cache Docker
+COPY ./trading-api/app/requirements.txt /shared/httpd/trading-api/app/requirements.txt
+
+# Installation des dépendances
+RUN pip install --no-cache-dir -r /shared/httpd/trading-api/app/requirements.txt
+
+# Copie du reste de l'application
+COPY ./trading-api /shared/httpd/trading-api
+
+# Exposition du port 8000 pour FastAPI
+EXPOSE 8000
+
+# Commande pour exécuter l'application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
