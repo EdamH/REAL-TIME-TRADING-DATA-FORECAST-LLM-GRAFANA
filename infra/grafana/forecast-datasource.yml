@@ -1,0 +1,17 @@
+apiVersion: 1
+datasources:
+  - id: 2
+    uid: "eecj27dmhwcg0a"
+    orgId: 1
+    name: "forecast-api"
+    type: "yesoreyeram-infinity-datasource"
+    url: "http://forecast-api-cntr:5000"
+    basicAuth: false
+    basicAuthUser: ""
+    isDefault: false
+    jsonData:
+      customHealthCheckEnabled: true
+      customHealthCheckUrl: "http://forecast-api-cntr:5000/forecast_data?symbol=BTC/USD"
+      global_queries: []
+    readOnly: false
+    apiVersion: ""

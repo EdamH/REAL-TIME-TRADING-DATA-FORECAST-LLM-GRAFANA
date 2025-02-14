@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: Elastic
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch-cntr:9200
+    jsonData:
+      index: 'trading'
+      interval: No pattern
+      timeField: 't'
